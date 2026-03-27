@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { home, login, register, logout as logout } from '@/routes';
+import {
+    login,
+    register,
+    logout as logout,
+    my_recommendations,
+    recommendations_index,
+    home,
+} from '@/routes';
 import { usePage, Link } from '@inertiajs/vue3';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/composables/useInitials';
 import { MessageSquare } from 'lucide-vue-next';
 import AppLogoIcon from '../AppLogoIcon.vue';
 import TextLink from '@/components/TextLink.vue';
+import { myrecommendations } from '@/actions/App/Http/Controllers/recommendationscontroller';
 
 defineProps<{
     canRegister: boolean;
@@ -36,9 +44,29 @@ const avatarurl = user?.avatar ? `/storage/${user.avatar}` : null;
                 </div>
             </Link>
 
+            <div class="flex gap-3">
+                <Link
+                    :href="recommendations_index()"
+                    class="inline-block rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-50"
+                >
+                    Llocs recommenats
+                </Link>
+
+                <Link
+                    :href="my_recommendations()"
+                    class="inline-block rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-50"
+                    v-if="$page.props.auth.user"
+                >
+                    Els meus Llocs recommenats
+                </Link>
+            </div>
+
             <div class="flex items-center gap-4">
                 <template v-if="$page.props.auth.user">
-                    <Link :href="logout()" class="mx-auto block text-sm">
+                    <Link
+                        :href="logout()"
+                        class="mx-auto block text-sm hover:cursor-alias"
+                    >
                         <span
                             class="hidden text-black hover:text-blue-400 hover:underline sm:block"
                             >Tancar sessió</span

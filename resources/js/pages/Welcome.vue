@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import PublicLayout from '@/layouts/PublicLayout.vue';
-import { dashboard, login, register, logout } from '@/routes';
+import { dashboard, login, register, logout, recommendations_index, my_recommendations } from '@/routes';
+import { myrecommendations } from '@/actions/App/Http/Controllers/recommendationscontroller';
 
 withDefaults(
     defineProps<{
@@ -31,7 +32,7 @@ const user = page.props.auth?.user ?? null;
                 <p class="mt-3 text-gray-600">
                     <Link
                         v-if="$page.props.auth.user"
-                        :href="dashboard()"
+                        :href="myrecommendations()"
                         class="inline-flex items-center rounded-lg bg-orange-500 px-5 py-2.5 font-semibold text-white hover:bg-orange-600"
                     >
                         Veure els meus llocs recomentas!
@@ -62,7 +63,7 @@ const user = page.props.auth?.user ?? null;
 
                 <div class="mt-6 flex flex-wrap gap-3">
                     <Link
-                        :href="dashboard()"
+                        :href="recommendations_index()"
                         class="inline-flex items-center rounded-lg bg-orange-500 px-5 py-2.5 font-semibold text-white hover:bg-orange-600"
                     >
                         Veure llocs recomenats per la comunitat!

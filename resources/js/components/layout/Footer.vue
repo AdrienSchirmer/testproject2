@@ -22,28 +22,19 @@ import AppLogoIcon from '../AppLogoIcon.vue';
                     </div>
                 </Link>
                 <p class="mt-3 text-sm leading-relaxed text-gray-600">
-                    Fomentant la reparació i la sostenibilitat a través de la
-                    comunitat.
+                    Fomentant software de qualitat, com els llocs que trovareu
+                    aquí!
                 </p>
             </div>
 
             <div>
                 <ul
-                    class="flex flex-col gap-3 font-semibold text-gray-700 *:underline md:text-right"
+                    class="flex flex-col gap-3 font-semibold text-gray-700 md:text-right"
                 >
                     <li class="text-green-600 decoration-green-600">
-                        <a href="/" class="hover:text-green-700"
-                            >Sostenabilitat</a
-                        >
-                    </li>
-                    <li>
-                        <Link href="/" class="hover:text-black"
-                            >Termes d'ús</Link
-                        >
-                    </li>
-                    <li>
-                        <Link href="/" class="hover:text-black"
-                            >Política de privadesa</Link
+                        <a
+                            >La pagina web no nomes es sostenible, si no
+                            accessible :> yeey</a
                         >
                     </li>
                 </ul>
