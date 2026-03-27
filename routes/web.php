@@ -5,6 +5,7 @@ use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use App\Http\Controllers\UserSettingsController;
 
 
 Route::get('/', function () {
@@ -13,10 +14,13 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+
+
 Route::resource('test', TestController::class)->middleware(['auth', 'verified']);
+
 
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';
