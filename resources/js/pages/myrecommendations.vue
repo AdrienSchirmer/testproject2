@@ -31,12 +31,36 @@ const props = withDefaults(
 );
 
 const selectedCategory = ref('');
+const searchquery = ref<string>('');
+
 const recommendationsData = ref(props.recommendations);
 
 const filterByCategory = () => {
-    fetch(
-        `/recommendations/filterme?category_id=${encodeURIComponent(selectedCategory.value)}`,
-    )
+    const categoryquery = selectedCategory.value
+        ? `?category_id=${encodeURIComponent(selectedCategory.value)}`
+        : '';
+    const searchqueryquery = searchquery.value
+        ? `?search=${searchquery.value}`
+        : '';
+    fetch(`/recommendations/filterme${categoryquery}${searchqueryquery}`)
+        .then((response) => response.json())
+        .then((data) => {
+            recommendationsData.value = data.recommendations ?? [];
+        })
+        .catch((error) => {
+            console.error('Error', error);
+        });
+};
+
+const filterBySearch = () => {
+    const searchqueryquery = searchquery.value
+        ? `?search=${searchquery.value}`
+        : '';
+    const categoryquery = selectedCategory.value
+        ? `?category_id=${encodeURIComponent(selectedCategory.value)}`
+        : '';
+    console.log(searchquery);
+    fetch(`/recommendations/filterme${searchqueryquery}${categoryquery}`)
         .then((response) => response.json())
         .then((data) => {
             recommendationsData.value = data.recommendations ?? [];
@@ -68,6 +92,16 @@ const formatDate = (date: string) =>
                 <Plus></Plus>
                 Nova recomenació
             </Link>
+
+            <input
+                v-model="searchquery"
+                @keyup="filterBySearch()"
+                aria-labelledby="search"
+                type="search"
+                placeholder="Cercar una recomenació per nom del lloc o ciutat...."
+                class="w-full rounded-lg border border-sidebar-border bg-white py-2 pr-4 pl-10 text-black"
+                aria-label="Cerca d'usuaris"
+            />
 
             <div class="mt-4 max-w-xs">
                 <label

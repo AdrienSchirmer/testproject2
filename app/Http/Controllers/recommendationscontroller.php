@@ -26,6 +26,7 @@ class recommendationscontroller extends Controller
     {
         $validated = $request->validate([
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'search' => ['nullable', 'string']
         ]);
 
         $recommendationsQuery = Recommendation::query()
@@ -40,6 +41,15 @@ class recommendationscontroller extends Controller
             });
         }
 
+        if (!empty($validated['search'])) {
+            $search = $validated['search'];
+
+            $recommendationsQuery->where(function ($query) use ($search) {
+                $query->where('city', 'LIKE', '%' . $search . '%')
+                    ->orWhere('site_name', 'LIKE', '%' . $search . '%');
+            });
+        }
+
         return response()->json([
             'recommendations' => $recommendationsQuery->get(),
         ]);
@@ -49,6 +59,7 @@ class recommendationscontroller extends Controller
     {
         $validated = $request->validate([
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'search' => ['nullable', 'string']
         ]);
 
         $recommendationsQuery = Recommendation::query()
@@ -61,6 +72,15 @@ class recommendationscontroller extends Controller
 
             $recommendationsQuery->whereHas('categories', function ($query) use ($categoryId) {
                 $query->where('categories.id', $categoryId);
+            });
+        }
+
+        if (!empty($validated['search'])) {
+            $search = $validated['search'];
+
+            $recommendationsQuery->where(function ($query) use ($search) {
+                $query->where('city', 'LIKE', '%' . $search . '%')
+                    ->orWhere('site_name', 'LIKE', '%' . $search . '%');
             });
         }
 

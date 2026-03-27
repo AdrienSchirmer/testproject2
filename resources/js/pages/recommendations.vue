@@ -31,12 +31,18 @@ const props = withDefaults(
 );
 
 const selectedCategory = ref('');
+const searchquery = ref<string>('');
+
 const recommendationsData = ref(props.recommendations);
 
 const filterByCategory = () => {
-    fetch(
-        `/recommendations/filterall?category_id=${encodeURIComponent(selectedCategory.value)}`,
-    )
+    const categoryquery = selectedCategory.value
+        ? `?category_id=${encodeURIComponent(selectedCategory.value)}`
+        : '';
+    const searchqueryquery = searchquery.value
+        ? `?search=${searchquery.value}`
+        : '';
+    fetch(`/recommendations/filterall${categoryquery}${searchqueryquery}`)
         .then((response) => response.json())
         .then((data) => {
             recommendationsData.value = data.recommendations ?? [];
@@ -46,6 +52,23 @@ const filterByCategory = () => {
         });
 };
 
+const filterBySearch = () => {
+    const searchqueryquery = searchquery.value
+        ? `?search=${searchquery.value}`
+        : '';
+    const categoryquery = selectedCategory.value
+        ? `?category_id=${encodeURIComponent(selectedCategory.value)}`
+        : '';
+    console.log(searchquery);
+    fetch(`/recommendations/filterall${searchqueryquery}${categoryquery}`)
+        .then((response) => response.json())
+        .then((data) => {
+            recommendationsData.value = data.recommendations ?? [];
+        })
+        .catch((error) => {
+            console.error('Error', error);
+        });
+};
 const formatDate = (date: string) =>
     new Date(date).toLocaleDateString('ca-ES', {
         day: '2-digit',
@@ -60,6 +83,16 @@ const formatDate = (date: string) =>
     <PublicLayout :can-register="canRegister">
         <div class="p-4">
             <h1 class="text-2xl font-semibold">Recommenacions</h1>
+
+            <input
+                v-model="searchquery"
+                @keyup="filterBySearch()"
+                aria-labelledby="search"
+                type="search"
+                placeholder="Cercar una recomenació per nom del lloc o ciutat...."
+                class="w-full rounded-lg border border-sidebar-border bg-white py-2 pr-4 pl-10 text-black"
+                aria-label="Cerca d'usuaris"
+            />
 
             <div class="mt-4 max-w-xs">
                 <label
