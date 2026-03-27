@@ -55,6 +55,7 @@ jobs:
           password: ${{ secrets.SSH_PASS }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            set -euo pipefail
             echo "Descomprimint el fitxer app.tgz"
             cd ${{ secrets.DOCUMENT_ROOT }}
             tar -xzf app.tgz
@@ -62,13 +63,28 @@ jobs:
             ls -lisa
             echo "Copiar el fitxer env si no el tenim"
             [ -f .env ] || cp .env.example .env
+
+            DB_CONNECTION_VALUE="${{ secrets.DB_CONNECTION }}"
+            DB_HOST_VALUE="${{ secrets.DB_HOST }}"
+            DB_PORT_VALUE="${{ secrets.DB_PORT }}"
+            DB_DATABASE_VALUE="${{ secrets.DB_DB }}"
+            DB_USERNAME_VALUE="${{ secrets.DB_USERNAME }}"
+            DB_PASSWORD_VALUE="${{ secrets.DB_PASSWORD }}"
+
+            if [ -z "$DB_CONNECTION_VALUE" ]; then DB_CONNECTION_VALUE="mysql"; fi
+
+            if [ -z "$DB_HOST_VALUE" ] || [ -z "$DB_PORT_VALUE" ] || [ -z "$DB_DATABASE_VALUE" ] || [ -z "$DB_USERNAME_VALUE" ] || [ -z "$DB_PASSWORD_VALUE" ]; then
+              echo "Missing one or more DB secrets: DB_HOST, DB_PORT, DB_DB, DB_USERNAME, DB_PASSWORD"
+              exit 1
+            fi
+
             echo "Canvia el fitxer env"
-            sed -i "s|^DB_CONNECTION=.*|DB_CONNECTION=${{ secrets.DB_CONNECTION }}|" .env
-            sed -i "s|^DB_HOST=.*|DB_HOST=${{ secrets.DB_HOST }}|" .env
-            sed -i "s|^DB_PORT=.*|DB_PORT=${{ secrets.DB_PORT }}|" .env
-            sed -i "s|^DB_DATABASE=.*|DB_DATABASE=${{ secrets.DB_DB }}|" .env
-            sed -i "s|^DB_USERNAME=.*|DB_USERNAME=${{ secrets.DB_USERNAME }}|" .env
-            sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD }}|" .env
+            sed -i "s|^DB_CONNECTION=.*|DB_CONNECTION=${DB_CONNECTION_VALUE}|" .env
+            sed -i "s|^DB_HOST=.*|DB_HOST=${DB_HOST_VALUE}|" .env
+            sed -i "s|^DB_PORT=.*|DB_PORT=${DB_PORT_VALUE}|" .env
+            sed -i "s|^DB_DATABASE=.*|DB_DATABASE=${DB_DATABASE_VALUE}|" .env
+            sed -i "s|^DB_USERNAME=.*|DB_USERNAME=${DB_USERNAME_VALUE}|" .env
+            sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD_VALUE}|" .env
             $(which php84) artisan config:clear
             $(which php84) artisan key:generate
             echo "Executar migracions, cache i altres operacions de Laravel"
