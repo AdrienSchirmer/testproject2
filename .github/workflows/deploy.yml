@@ -2,7 +2,7 @@ name: DinahostingDeploy
 
 on:
   push:
-    branches: ['main', 'develop']
+    branches: ['develop']
   workflow_dispatch:
 jobs:
   build:
@@ -55,7 +55,6 @@ jobs:
           password: ${{ secrets.SSH_PASS }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            set -euo pipefail
             echo "Descomprimint el fitxer app.tgz"
             cd ${{ secrets.DOCUMENT_ROOT }}
             tar -xzf app.tgz
@@ -63,56 +62,13 @@ jobs:
             ls -lisa
             echo "Copiar el fitxer env si no el tenim"
             [ -f .env ] || cp .env.example .env
-
-            DB_CONNECTION_VALUE="${{ secrets.DB_CONNECTION }}"
-            DB_HOST_VALUE="${{ secrets.DB_HOST }}"
-            DB_PORT_VALUE="${{ secrets.DB_PORT }}"
-            DB_DATABASE_VALUE="${{ secrets.DB_DB }}"
-            DB_USERNAME_VALUE="${{ secrets.DB_USERNAME }}"
-            DB_PASSWORD_VALUE="${{ secrets.DB_PASSWORD }}"
-
-            if [ -z "$DB_CONNECTION_VALUE" ]; then DB_CONNECTION_VALUE="mysql"; fi
-
-            if [ -z "$DB_HOST_VALUE" ] || [ -z "$DB_PORT_VALUE" ] || [ -z "$DB_DATABASE_VALUE" ] || [ -z "$DB_USERNAME_VALUE" ] || [ -z "$DB_PASSWORD_VALUE" ]; then
-              echo "Missing one or more DB secrets: DB_HOST, DB_PORT, DB_DB, DB_USERNAME, DB_PASSWORD"
-              exit 1
-            fi
-
-            set_env_var() {
-              key="$1"
-              value="$2"
-              grep -v "^${key}=" .env > .env.tmp || true
-              mv .env.tmp .env
-              printf '%s=%s\n' "$key" "$value" >> .env
-            }
-
             echo "Canvia el fitxer env"
-            set_env_var "DB_CONNECTION" "$DB_CONNECTION_VALUE"
-            set_env_var "DB_HOST" "$DB_HOST_VALUE"
-            set_env_var "DB_PORT" "$DB_PORT_VALUE"
-            set_env_var "DB_DATABASE" "$DB_DATABASE_VALUE"
-            set_env_var "DB_USERNAME" "$DB_USERNAME_VALUE"
-            # Quote password to avoid dotenv parsing issues with special chars (#, spaces, etc.).
-            set_env_var "DB_PASSWORD" "\"$DB_PASSWORD_VALUE\""
-
-            export DB_CONNECTION_VALUE DB_HOST_VALUE DB_PORT_VALUE DB_DATABASE_VALUE DB_USERNAME_VALUE DB_PASSWORD_VALUE
-            $(which php84) -r '
-              $driver = getenv("DB_CONNECTION_VALUE") ?: "mysql";
-              $dsn = sprintf(
-                "%s:host=%s;port=%s;dbname=%s",
-                $driver,
-                getenv("DB_HOST_VALUE"),
-                getenv("DB_PORT_VALUE"),
-                getenv("DB_DATABASE_VALUE")
-              );
-              try {
-                new PDO($dsn, getenv("DB_USERNAME_VALUE"), getenv("DB_PASSWORD_VALUE"), [PDO::ATTR_TIMEOUT => 5]);
-                echo "DB connection test: OK\n";
-              } catch (Throwable $e) {
-                fwrite(STDERR, "DB connection test failed: " . $e->getMessage() . "\n");
-                exit(1);
-              }
-            '
+            sed -i "s/DB_CONNECTION=mysql/DB_CONNECTION=${{ secrets.DB_CONNECTION }}/g" .env
+            sed -i "s/DB_HOST=127.0.0.1/DB_HOST=${{ secrets.DB_HOST }}/g" .env
+            sed -i "s/DB_PORT=3306/DB_PORT=${{ secrets.DB_PORT }}/g" .env
+            sed -i "s/DB_DATABASE=db/DB_DATABASE=${{ secrets.DB_DB }}/g" .env
+            sed -i "s/DB_USERNAME=user/DB_USERNAME=${{ secrets.DB_USERNAME }}/g" .env
+            sed -i "s/DB_PASSWORD=pwrd/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/g" .env
             $(which php84) artisan config:clear
             $(which php84) artisan key:generate
             echo "Executar migracions, cache i altres operacions de Laravel"
